@@ -12,15 +12,15 @@ const createMainWindow = () => {
     webPreferences: {
       worldSafeExecuteJavaScript: true,
     },
-    width: 1000,
-    height: 800,
+    width: 500,
+    height: 650,
     title: 'ImageShrink',
     icon: `${__dirname}/assets/icons/Icon_256x256.png`,
     resizable: isDev,
-    backgroundColor: 'white'
+    backgroundColor: 'white',
   });
 
-  mainWindow.loadURL(`file://${__dirname}/app/index.html`);
+  // mainWindow.loadURL(`file://${__dirname}/app/index.html`);
   mainWindow.loadFile('./app/index.html');
 };
 
@@ -40,16 +40,30 @@ app.on('ready', () => {
 const menu = [
   ...(isMac ? [{ role: 'appMenu' }] : []),
   {
-    label: 'File',
-    submenu: [
-      {
-        label: 'Quit',
-        accelerator: isMac ? 'Command+W' : 'Ctrl+W',
-        accelerator: 'CmdOrCtrl+W',
-        click: () => app.quit(),
-      },
-    ],
+    role: 'fileMenu',
+    // label: 'File',
+    // submenu: [
+    //   {
+    //     label: 'Quit',
+    //     accelerator: isMac ? 'Command+W' : 'Ctrl+W',
+    //     accelerator: 'CmdOrCtrl+W',
+    //     click: () => app.quit(),
+    //   },
+    // ],
   },
+  ...(isDev
+    ? [
+        {
+          label: 'Developer',
+          submenu: [
+            { role: 'reload' },
+            { role: 'forcereload' },
+            { type: 'separator' },
+            { role: 'toggledevtools' },
+          ],
+        },
+      ]
+    : []),
 ];
 
 app.on('window-all-closed', () => {
