@@ -1,4 +1,18 @@
-const { app, BrowserWindow, Menu, globalShortcut } = require('electron');
+const {
+  app,
+  BrowserWindow,
+  Menu,
+  globalShortcut,
+  ipcMain,
+  shell,
+} = require('electron');
+const path = require('path');
+const os = require('os');
+const imagemin = require('imagemin');
+const imageminMozjpeg = require('imagemin-mozjpeg');
+const imageminPngquant = require('imagemin-pngquant');
+const slash = require('slash');
+const log = require('electron-log');
 
 process.env.NODE_ENV = 'development';
 
@@ -11,6 +25,7 @@ const createMainWindow = () => {
   mainWindow = new BrowserWindow({
     webPreferences: {
       worldSafeExecuteJavaScript: true,
+      nodeIntegration: true,
     },
     width: isDev ? 800 : 500,
     height: 650,
@@ -18,9 +33,6 @@ const createMainWindow = () => {
     icon: `${__dirname}/assets/icons/Icon_256x256.png`,
     resizable: isDev,
     backgroundColor: 'white',
-    webPreferences: {
-      nodeIntegration: true,
-    },
   });
 
   if (isDev) {
@@ -72,6 +84,32 @@ const menu = [
       ]
     : []),
 ];
+
+ipcMain.on('image:minimize', (e, options) => {
+  options.destination = path.join(os.homedir(), 'imageshrink');
+  shrinkImage(options);
+});
+
+const shrinkImage = async ({ imgPath, quality, destination }) => {
+  try {
+    const pngQuality = quality / 100;
+    const files = await imagemin([slash(imgPath)], {
+      destination: destination,
+      plugins: [
+        imageminMozjpeg({ quality }),
+        imageminPngquant({ quality: [pngQuality, pngQuality] }),
+      ],
+    });
+
+    console.log(files);
+    // log.info(files);
+    shell.openPath(destination);
+    mainWindow.webContents.send('image:done');
+  } catch (error) {
+    console.log(error);
+    // log.error(error);
+  }
+};
 
 app.on('window-all-closed', () => {
   // Quit when all windows are closed, except on macOS. There, it's common
