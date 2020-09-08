@@ -12,13 +12,20 @@ const createMainWindow = () => {
     webPreferences: {
       worldSafeExecuteJavaScript: true,
     },
-    width: 500,
+    width: isDev ? 800 : 500,
     height: 650,
     title: 'ImageShrink',
     icon: `${__dirname}/assets/icons/Icon_256x256.png`,
     resizable: isDev,
     backgroundColor: 'white',
+    webPreferences: {
+      nodeIntegration: true,
+    },
   });
+
+  if (isDev) {
+    mainWindow.webContents.openDevTools();
+  }
 
   // mainWindow.loadURL(`file://${__dirname}/app/index.html`);
   mainWindow.loadFile('./app/index.html');
